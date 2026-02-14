@@ -24,6 +24,7 @@ export default function Creator({ onBack }) {
   const [savedQuiz, setSavedQuiz] = useState(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorInfo, setErrorInfo] = useState({ title: '', message: '' });
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005';
 
   const decoyLibrary = {
     color: ["Red", "Blue", "Yellow", "Purple", "Green", "Black", "White", "Gold", "Silver"],
@@ -111,7 +112,7 @@ export default function Creator({ onBack }) {
     };
   
     try {
-      const res = await fetch('http://localhost:5005/api/quiz/create', {
+      const res = await fetch(`${API_URL}/api/quiz/create`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

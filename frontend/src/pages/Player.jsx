@@ -12,6 +12,7 @@ export default function Player({ onBack, onComplete }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005';
 
   // Check URL for room code
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function Player({ onBack, onComplete }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5005/api/quiz/${enteredCode}`);
+      const res = await fetch(`${API_URL}/api/quiz/${enteredCode}`);
       
       if (!res.ok) {
         alert('Room not found! Please check the code.');
@@ -71,7 +72,7 @@ export default function Player({ onBack, onComplete }) {
 
   const saveCompletion = async () => {
     try {
-      await fetch(`http://localhost:5005/api/quiz/${quiz.roomCode}/complete`, {
+      await fetch(`${API_URL}/api/quiz/${quiz.roomCode}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
