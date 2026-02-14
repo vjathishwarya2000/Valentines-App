@@ -4,20 +4,33 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// CORS Configuration
+app.use(cors({
+  origin: [
+    'http://localhost:5173',  // Local development
+    'https://valentines-app2026.netlify.app', 
+    /\.netlify\.app$/  
+  ],
+  credentials: true
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected'))
+  .then(() => console.log('✅ MongoDB Connected Successfully!'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 const Quiz = require('./models/Quiz');
 
+// Health Check Route - MUST BE FIRST
 app.get('/', (req, res) => {
   res.json({ 
     status: 'OK',
     message: '💕 Valentine Quiz API is running!',
+    timestamp: new Date().toISOString(),
     endpoints: {
       createQuiz: 'POST /api/quiz/create',
       getQuiz: 'GET /api/quiz/:code',
@@ -49,9 +62,9 @@ app.post('/api/quiz/create', async (req, res) => {
   } catch (err) {
     console.error('❌ Error creating quiz:', err.message);
     
-    // Handle duplicate room code - IMPORTANT: Return success: false
+    // Handle duplicate room code
     if (err.code === 11000) {
-      return res.status(200).json({  // Changed from 400 to 200
+      return res.status(200).json({
         success: false, 
         error: 'Room code already exists',
         message: `The room code "${req.body.roomCode}" is already being used by another lovely couple. Please choose a different code to create your unique love quiz!`
@@ -60,7 +73,7 @@ app.post('/api/quiz/create', async (req, res) => {
     
     // Handle validation errors
     if (err.name === 'ValidationError') {
-      return res.status(200).json({  // Changed from 400 to 200
+      return res.status(200).json({
         success: false, 
         error: 'Validation failed',
         message: 'Missing required fields: ' + Object.keys(err.errors).join(', ')
@@ -68,7 +81,7 @@ app.post('/api/quiz/create', async (req, res) => {
     }
     
     // Other errors
-    res.status(200).json({  // Changed from 500 to 200
+    res.status(200).json({
       success: false, 
       error: err.message,
       message: 'An error occurred while saving your quiz. Please try again!'
@@ -142,8 +155,24 @@ app.get('/api/quiz/:code/stats', async (req, res) => {
   }
 });
 
+// 404 handler - MUST BE LAST
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Cannot ${req.method} ${req.path}`,
+    availableEndpoints: [
+      'GET /',
+      'POST /api/quiz/create',
+      'GET /api/quiz/:code',
+      'POST /api/quiz/:code/complete',
+      'GET /api/quiz/:code/stats'
+    ]
+  });
+});
+
 const PORT = process.env.PORT || 5005;
 app.listen(PORT, () => {
   console.log(`🎵 Server running on port ${PORT}`);
   console.log(`💕 Backend is ready for love!`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
