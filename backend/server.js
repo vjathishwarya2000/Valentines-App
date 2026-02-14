@@ -14,6 +14,19 @@ mongoose.connect(process.env.MONGO_URI)
 
 const Quiz = require('./models/Quiz');
 
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK',
+    message: '💕 Valentine Quiz API is running!',
+    endpoints: {
+      createQuiz: 'POST /api/quiz/create',
+      getQuiz: 'GET /api/quiz/:code',
+      complete: 'POST /api/quiz/:code/complete',
+      stats: 'GET /api/quiz/:code/stats'
+    }
+  });
+});
+
 // Create a new quiz
 app.post('/api/quiz/create', async (req, res) => {
   try {
